@@ -26,7 +26,7 @@ const Search = (props) => {
     <div>
       <form className={Style.searchForm} onSubmit={handleSubmit}>
         <label htmlFor="Search">
-          <input type="text" name='username' value={username} onChange={handleChange}/>
+          <input type="text" name='username' placeholder='user00127' value={username} onChange={handleChange}/>
         </label>
         <label htmlFor="Button">
           <button type='submit'><img src="/icon/search.svg" alt=""/></button>
