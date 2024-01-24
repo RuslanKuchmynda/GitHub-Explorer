@@ -1,21 +1,22 @@
 import {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import axios from "axios";
 
 import Style from './UserPage.module.css'
 import Repository from "../../components/Repository/Repository";
+import ErrorPage from "../errorPage/ErrorPage";
 
-const UserPage = (props) =>{
+const UserPage = (props) => {
   const [userInfo, setUserInfo] = useState({}) // User State
-  const [repository, setRepository] = useState({}) // Repository State
+  const [repository, setRepository] = useState([]) // Repository State
 
   const {username} = useParams() // Get username from url
 
   useEffect(() => {
     // Request for github api (User)
     axios.get(`https://api.github.com/users/${username}`)
-      .then(response =>{
-        console.log(response)
+      .then(response => {
+        // console.log(response)
         const user = {
           avatarUrl: response.data.avatar_url,
           username: response.data.name,
@@ -25,51 +26,55 @@ const UserPage = (props) =>{
           repository_url: response.data.repos_url,
         }
         setUserInfo(user)
-
         // Request for github api (User repository)
         axios.get(`${user.repository_url}`)
           .then(repoResponse => {
-            console.log(repoResponse);
-            const repositoryInfo = {
-              repoName: repoResponse.data.name,
-              language: repoResponse.data.language,
-              link: repoResponse.data.url
-            }
+            const repositoryInfo = repoResponse.data.map(el => ({
+              repoName: el.name,
+              language: el.language,
+              link: el.html_url,
+              updated_at: el.updated_at,
+            }))
             setRepository(repositoryInfo)
           })
           .catch(repoError => {
-            console.log(repoError);
           });
       })
-      .catch(error =>{
-        console.log(error)
+      .catch(error => {
+        // console.log(error)
+        alert('user is not found')
       })
-
-
   }, [username]);
 
-    return(
-    <div className = {Style.user}>
+  return (
+    <div className={Style.user}>
       <section className={Style.userInfo}>
         <img src={userInfo.avatarUrl} alt=""/>
-       <h3>{userInfo.username}</h3>
+        <h3>{userInfo.username}</h3>
         <div>
           {userInfo.location != null ? `Location: ${userInfo.location}` : ''}
         </div>
         <div>
-          {userInfo.created_at ? `Created account: ${userInfo.created_at.slice(0,10)}` : ''}
+          {userInfo.created_at ? `Created account: ${userInfo.created_at.slice(0, 10)}` : ''}
         </div>
         <div>
-          <a className={Style.userUrl} href={`${userInfo.userUrl}`}>Link account</a>
+          <a target="_blank" className={Style.userUrl} href={`${userInfo.userUrl}`}>Link account</a>
         </div>
       </section>
       <section className={Style.userRepositories}>
         <h2>Repositories</h2>
-        <Repository/>
-        <Repository/>
+        {repository.map((item, index) => (
+          <Repository
+            key={index}
+            repoName={item.repoName}
+            language={item.language}
+            link={item.link}
+            updated_at={item.updated_at}
+          />
+        ))}
       </section>
     </div>
-    );
+  );
 };
 
 export default UserPage

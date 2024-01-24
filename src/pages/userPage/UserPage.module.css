@@ -32,4 +32,6 @@
 .userRepositories{
     padding: 0px 50px;
     width: 100%;
+    overflow: auto;
+    height: 500px;
 }
